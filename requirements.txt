@@ -1,0 +1,7 @@
+# Pinned so CI and your laptop run the EXACT same versions. Unpinned deps are a
+# classic reason a scraper "randomly" breaks when a new release lands.
+requests==2.32.3
+beautifulsoup4==4.12.3
+lxml==5.3.0
+pandas==2.2.3
+pytest==8.3.4

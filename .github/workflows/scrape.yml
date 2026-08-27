@@ -1,0 +1,52 @@
+# ---------------------------------------------------------------------------
+# THE SCHEDULED SCRAPER — this is the "pipeline on a schedule" the project is about.
+# Runs nightly (and on demand), scrapes the live catalogue politely, and commits the
+# refreshed dataset (data/books.csv) back to the repo. This is a free "cron in the
+# cloud" via GitHub Actions.
+# ---------------------------------------------------------------------------
+name: Nightly scrape
+
+on:
+  schedule:
+    - cron: "0 6 * * *"     # 06:00 UTC every day (GitHub uses UTC)
+  workflow_dispatch:         # adds a manual "Run workflow" button
+
+# We need write access because the job commits the updated CSV back to the repo.
+permissions:
+  contents: write
+
+# Don't let two scrape runs overlap.
+concurrency:
+  group: scrape
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: build
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+
+      # Be a good citizen even in CI: a real delay between requests.
+      - name: Scrape the catalogue
+        run: python -m scraper.pipeline --delay 1.0
+
+      # Commit the refreshed dataset only if it actually changed.
+      - name: Commit updated data
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/books.csv
+          if git diff --staged --quiet; then
+            echo "No data changes."
+          else
+            git commit -m "data: refresh scraped books ($(date -u +%Y-%m-%d))"
+            git push
+          fi

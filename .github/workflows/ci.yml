@@ -1,0 +1,31 @@
+# ---------------------------------------------------------------------------
+# CONTINUOUS INTEGRATION — runs on every pull request and push to main.
+# Tests the PARSERS against the saved HTML fixture. It does NOT hit the live site,
+# so it's fast, deterministic, and polite. If the markup changes and a parser
+# breaks, these tests go red.
+# ---------------------------------------------------------------------------
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: build
+    steps:
+      # Pinned to a full commit SHA (not @v4) so a compromised tag can't change it.
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: pytest

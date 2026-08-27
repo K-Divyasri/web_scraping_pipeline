@@ -1,0 +1,6 @@
+# Minimal config. The pytest section puts the build/ root on the import path so
+# `from scraper.parse import ...` works, and points pytest at tests/.
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-q"

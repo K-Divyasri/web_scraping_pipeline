@@ -1,0 +1,13 @@
+# Never commit these.
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Secrets — keep them OUT of git. Commit .env.example instead.
+.env
+
+# The SQLite database is a build artifact (the scheduled job rebuilds it). We DO
+# commit data/books.csv though — see the README — so the dataset is visible on
+# GitHub. If you'd rather not, add it here.
+data/books.db
